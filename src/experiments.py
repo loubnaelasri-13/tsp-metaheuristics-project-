@@ -1,45 +1,54 @@
+import time
 import pandas as pd
 import matplotlib.pyplot as plt
-from tsp_utils import read_instance
-from greedy import greedy_tsp
+from reader import read_instance
+from greedy import nearest_neighbor
 from threshold_accepting import threshold_accepting
 from simulated_annealing import simulated_annealing
-from hybrid_sa_2opt import hybrid_sa_2opt
+from hybrid_metaheuristic import hybrid_solver
+from tsp_utils import tour_length
 
-instances = [
-    "../data/instance_29.txt",
-    "../data/instance_51.txt"
-]
+def run_experiment(instance_file):
+    D = read_instance(instance_file)
+    results = []
 
-results = []
+    start = time.time()
+    s = nearest_neighbor(D)
+    results.append(["Greedy", tour_length(s,D), round(time.time()-start,3)])
 
-for inst in instances:
+    start = time.time()
+    s = threshold_accepting(D, s)
+    results.append(["Threshold Accepting", tour_length(s,D), round(time.time()-start,3)])
 
-    d = read_instance(inst)
+    start = time.time()
+    s = simulated_annealing(D, s)
+    results.append(["Simulated Annealing", tour_length(s,D), round(time.time()-start,3)])
 
-    g = greedy_tsp(d)[1]
-    ta = threshold_accepting(d)[1]
-    sa = simulated_annealing(d)[1]
-    hybrid = hybrid_sa_2opt(d)[1]
+    start = time.time()
+    s = hybrid_solver(D)
+    results.append(["Hybrid", tour_length(s,D), round(time.time()-start,3)])
 
-    results.append([inst, g, ta, sa, hybrid])
+    df = pd.DataFrame(results, columns=["Méthode", "Distance", "Temps (s)"])
+    return df
 
-df = pd.DataFrame(results,
-                  columns=["Instance", "Greedy", "TA", "SA", "Hybrid"])
+def save_results(df, instance_name):
+    table_file = f"results/tables/{instance_name}_results.csv"
+    df.to_csv(table_file, index=False)
 
-print(df)
-
-df.to_csv("../results/tables/results_table.csv", index=False)
-
-for i in range(len(df)):
-    instance = df.loc[i, "Instance"]
-    values = df.loc[i, ["Greedy", "TA", "SA", "Hybrid"]]
-
-    plt.figure()
-    plt.bar(["Greedy", "TA", "SA", "Hybrid"], values)
-    plt.title("Comparaison des méthodes - " + instance)
+    plt.figure(figsize=(6,4))
+    plt.bar(df["Méthode"], df["Distance"], color=["skyblue","orange","green","red"])
     plt.ylabel("Distance")
-
-    name = instance.split("/")[-1].replace(".txt", "")
-    plt.savefig("../results/figures/" + name + "_comparison.png")
+    plt.title(f"Comparaison des métaheuristiques - {instance_name}")
+    figure_file = f"results/figures/{instance_name}_comparison.png"
+    plt.savefig(figure_file)
     plt.close()
+
+if __name__ == "__main__":
+    for instance_path in ["data/instance_29.txt", "data/instance_51.txt"]:
+        instance_name = instance_path.split("/")[-1].replace(".txt","")
+        df = run_experiment(instance_path)
+        save_results(df, instance_name)
+        print(f"Résultats pour {instance_name}:")
+        print(df)
+        print(f"Tableau CSV sauvegardé dans results/tables/{instance_name}_results.csv")
+        print(f"Figure sauvegardée dans results/figures/{instance_name}_comparison.png")
