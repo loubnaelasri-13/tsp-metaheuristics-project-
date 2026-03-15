@@ -46,3 +46,8 @@ Les algorithmes implémentés
 L'approche hybride proposée
 
 Les résultats expérimentaux et leur analyse
+
+## Auteur
+
+Loubna ELASRI -  Etudiante en Master Intelligence Artificielle et Recherche Opérationnelle  
+Université Moulay Ismail  
