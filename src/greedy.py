@@ -1,27 +1,27 @@
-import random
-from tsp_utils import tour_length
+import numpy as np
 
-def greedy_tsp(d):
+def nearest_neighbor(D, start=None):
 
-    n = len(d)
-
-    start = random.randint(0, n-1)
-
-    unvisited = list(range(n))
-    unvisited.remove(start)
-
-    tour = [start]
-
+    n = len(D)
+    
+    if start is None:
+        start = np.random.randint(n)
+    
+    visited = [start]
     current = start
-
-    while unvisited:
-
-        next_city = min(unvisited, key=lambda x: d[current][x])
-
-        tour.append(next_city)
-
-        unvisited.remove(next_city)
-
-        current = next_city
-
-    return tour, tour_length(tour, d)
+    
+    while len(visited) < n:
+        distances = D[current]
+        
+        # trouver la ville non visitée la plus proche
+        nearest = None
+        best_dist = float('inf')
+        for j in range(n):
+            if j not in visited and distances[j] < best_dist:
+                nearest = j
+                best_dist = distances[j]
+        
+        visited.append(nearest)
+        current = nearest
+    
+    return visited
