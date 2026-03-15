@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 from tsp_utils import read_instance
 from greedy import greedy_tsp
 from threshold_accepting import threshold_accepting
@@ -28,4 +29,17 @@ df = pd.DataFrame(results,
 
 print(df)
 
-df.to_csv("../results/results_table.csv", index=False)
+df.to_csv("../results/tables/results_table.csv", index=False)
+
+for i in range(len(df)):
+    instance = df.loc[i, "Instance"]
+    values = df.loc[i, ["Greedy", "TA", "SA", "Hybrid"]]
+
+    plt.figure()
+    plt.bar(["Greedy", "TA", "SA", "Hybrid"], values)
+    plt.title("Comparaison des méthodes - " + instance)
+    plt.ylabel("Distance")
+
+    name = instance.split("/")[-1].replace(".txt", "")
+    plt.savefig("../results/figures/" + name + "_comparison.png")
+    plt.close()
