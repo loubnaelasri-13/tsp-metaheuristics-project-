@@ -1,16 +1,17 @@
 import numpy as np
-import random
 
-def read_instance(filename):
+def tour_length(tour, D):
 
-    with open(filename, 'r') as f:
-        text = f.read()
+    n = len(tour)
+    length = 0
+    for i in range(n-1):
+        length += D[tour[i]][tour[i+1]]
+    length += D[tour[-1]][tour[0]]  # retour à la ville de départ
+    return length
 
-    start = text.find("[[")
-    end = text.rfind("]]") + 2
-
-    matrix_str = text[start:end].replace(";", "")
-
-    d = np.array(eval(matrix_str))
-
-    return d
+def swap_neighbor(tour):
+    
+    i, j = np.random.choice(len(tour), 2, replace=False)
+    new_tour = tour.copy()
+    new_tour[i], new_tour[j] = new_tour[j], new_tour[i]
+    return new_tour
