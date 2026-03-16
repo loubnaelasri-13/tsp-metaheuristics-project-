@@ -46,15 +46,15 @@ Soit $n$ villes et une matrice de distances $D=(d_{ij})$ où $d_{ij}$ représent
 
 Une solution du problème est une permutation des villes :
 
-[
+\[
 x = (x_1,x_2,\dots,x_n)
-]
+\]
 
 Le coût d'une tournée est défini par :
 
-[
+\[
 f(x)=\sum_{k=1}^{n} d_{x_k x_{k+1}}, \quad \text{avec } x_{n+1}=x_1
-]
+\]
 
 Le TSP appartient à la classe des problèmes NP-difficiles.
 Cela signifie que le temps nécessaire pour trouver une solution optimale augmente de manière exponentielle avec le nombre de villes.
@@ -143,17 +143,17 @@ Le recuit simulé est une métaheuristique inspirée du processus physique de re
 L'algorithme accepte systématiquement les améliorations de solution.
 Cependant, il peut également accepter des solutions de moins bonne qualité avec une probabilité donnée par :
 
-[
+\[
 P = e^{-d/T}
-]
+\]
 
 où $d$ représente la détérioration de la solution et $T$ la température.
 
 La température est progressivement réduite selon une loi de refroidissement géométrique :
 
-[
+\[
 T \leftarrow \alpha T
-]
+\]
 
 avec $0<\alpha<1$.
 
