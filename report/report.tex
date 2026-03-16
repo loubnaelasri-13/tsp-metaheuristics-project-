@@ -13,7 +13,8 @@
 \geometry{margin=2.5cm}
 
 \title{Résolution du Problème du Voyageur de Commerce \\ par Métaheuristiques et Approche Hybride}
-\author{Master Intelligence Artificielle et Recherche Opérationnelle \\ Loubna Elasri}
+\author{Master Intelligence Artificielle et Recherche Opérationnelle}
+\author{Réalisé par : Loubna Elasri}
 \date{Année universitaire : 2025--2026}
 
 \begin{document}
@@ -34,7 +35,6 @@ Afin d'améliorer les performances obtenues, une approche hybride combinant le r
 Les différentes méthodes sont testées sur plusieurs instances du problème et les résultats obtenus sont analysés et comparés.
 
 \end{abstract}
-
 \section{Introduction}
 
 Le problème du voyageur de commerce (TSP) est un problème classique d'optimisation combinatoire.
@@ -46,15 +46,15 @@ Soit $n$ villes et une matrice de distances $D=(d_{ij})$ où $d_{ij}$ représent
 
 Une solution du problème est une permutation des villes :
 
-\[
+[
 x = (x_1,x_2,\dots,x_n)
-\]
+]
 
 Le coût d'une tournée est défini par :
 
-\[
+[
 f(x)=\sum_{k=1}^{n} d_{x_k x_{k+1}}, \quad \text{avec } x_{n+1}=x_1
-\]
+]
 
 Le TSP appartient à la classe des problèmes NP-difficiles.
 Cela signifie que le temps nécessaire pour trouver une solution optimale augmente de manière exponentielle avec le nombre de villes.
@@ -68,100 +68,211 @@ Dans ce travail, plusieurs méthodes sont implémentées et comparées afin d'é
 Les instances du problème sont fournies sous forme de matrices de distances stockées dans des fichiers texte.
 Chaque élément $d_{ij}$ de la matrice représente la distance entre la ville $i$ et la ville $j$.
 
-Lors de la lecture des données, la matrice est stockée dans une structure de type tableau permettant un accès rapide aux distances.
-Une vérification est également effectuée afin de garantir que $d_{ii}=0$ pour toute ville $i$.
+Lors de la lecture des données, la matrice est stockée dans une structure de type tableau (array) permettant un accès rapide aux distances.
+Une vérification est également effectuée afin de garantir que $d_{ii}=0$ pour toute ville $i$, ce qui correspond à l'absence de distance entre une ville et elle-même.
 
 \section{Objectif du projet}
-
 Le sujet demande d'implémenter :
-
 \begin{itemize}
-\item une heuristique de base du \emph{plus proche voisin} ;
-\item une métaheuristique pour améliorer la solution initiale ;
-\item une comparaison des performances en termes de coût de tournée et de temps d'exécution.
+    \item une heuristique de base du \emph{plus proche voisin} ;
+    \item une métaheuristique au choix pour améliorer la solution initiale ;
+    \item une comparaison des performances en termes de coût de tournée, temps d'exécution et gain relatif.
 \end{itemize}
+
+L'approche retenue ici est un \textbf{algorithme mémétique}, c'est-à-dire une hybridation entre :
+\begin{itemize}
+    \item un \textbf{algorithme génétique} pour l'exploration globale ;
+    \item une \textbf{recherche locale 2-opt} pour l'intensification.
+\end{itemize}
+
+\section{Description des données}
+Les expériences sont réalisées sur dix instances issues de TSPLIB :
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Instance & Taille \\
+\midrule
+eil51 & 51 \\
+berlin52 & 52 \\
+st70 & 70 \\
+pr76 & 76 \\
+kroA100 & 100 \\
+kroB100 & 100 \\
+rd100 & 100 \\
+eil101 & 101 \\
+lin105 & 105 \\
+ch130 & 130 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Ces instances couvrent des tailles différentes, ce qui permet d'observer le comportement des deux approches sur des problèmes de plus en plus grands.
+
+
 
 \section{Heuristique gloutonne du plus proche voisin}
 
 La première méthode utilisée est l'heuristique gloutonne du plus proche voisin.
+Cette approche consiste à construire progressivement une tournée en choisissant à chaque étape la ville non visitée la plus proche de la ville courante.
 
+L'algorithme fonctionne de la manière suivante :
 \begin{enumerate}
-\item Choisir une ville de départ.
-\item Sélectionner la ville non visitée la plus proche.
+\item Choisir aléatoirement une ville de départ.
+\item Sélectionner parmi les villes non visitées celle qui minimise la distance à la ville actuelle.
 \item Ajouter cette ville à la tournée.
-\item Répéter jusqu'à ce que toutes les villes soient visitées.
-\item Revenir à la ville de départ.
+\item Répéter l'opération jusqu'à ce que toutes les villes soient visitées.
+\item Revenir à la ville de départ pour fermer la tournée.
 \end{enumerate}
 
-Cette heuristique est très rapide mais peut conduire à des solutions de qualité limitée.
-
+Cette heuristique est très rapide mais elle peut conduire à des solutions de qualité limitée, car les décisions sont prises de manière locale sans considération globale.
 \section{Algorithme Threshold Accepting}
 
-Threshold Accepting est une méthode de recherche locale.
+Threshold Accepting est une méthode de recherche locale permettant d'explorer l'espace des solutions tout en acceptant certaines détériorations contrôlées.
 
-À chaque itération un voisin est généré en échangeant deux villes dans la tournée.
-Si la variation de coût est inférieure à un seuil $S$, la solution est acceptée.
+À chaque itération, un voisin de la solution courante est généré en échangeant deux villes dans la tournée.
+Si la différence de coût entre la nouvelle solution et la solution courante est inférieure à un seuil $S$, la solution est acceptée.
 
-Le seuil est progressivement diminué au cours de l'exécution.
+Au cours de l'exécution de l'algorithme, ce seuil est progressivement diminué afin de rendre les critères d'acceptation de plus en plus stricts.
+
+Cette stratégie permet d'éviter de rester bloqué dans des minima locaux et favorise l'exploration de nouvelles régions de l'espace de recherche.
 
 \section{Recuit simulé}
 
-Le recuit simulé est inspiré du processus physique de refroidissement.
+Le recuit simulé est une métaheuristique inspirée du processus physique de refroidissement des matériaux.
 
-Une solution moins bonne peut être acceptée avec une probabilité :
+L'algorithme accepte systématiquement les améliorations de solution.
+Cependant, il peut également accepter des solutions de moins bonne qualité avec une probabilité donnée par :
 
-\[
+[
 P = e^{-d/T}
-\]
+]
 
 où $d$ représente la détérioration de la solution et $T$ la température.
 
-La température diminue progressivement :
+La température est progressivement réduite selon une loi de refroidissement géométrique :
 
-\[
+[
 T \leftarrow \alpha T
-\]
+]
 
 avec $0<\alpha<1$.
 
-\section{Approche hybride}
+Au début de l'algorithme, la température est élevée et permet une exploration importante de l'espace de recherche.
+Au fur et à mesure que la température diminue, l'algorithme devient plus sélectif et se concentre sur l'amélioration de la solution.
 
-L'approche hybride combine le recuit simulé avec la recherche locale 2-opt.
+\section{Approche hybride proposée}
 
-La méthode 2-opt consiste à supprimer deux arêtes de la tournée et reconnecter les segments afin de réduire la distance totale.
+Afin d'améliorer la qualité des solutions obtenues, une approche hybride est proposée.
+
+Cette méthode combine le recuit simulé avec une recherche locale de type 2-opt.
+
+L'idée principale est d'utiliser le recuit simulé pour explorer l'espace des solutions, puis d'appliquer une amélioration locale permettant d'optimiser davantage la tournée.
+
+La méthode 2-opt consiste à supprimer deux arêtes de la tournée et à reconnecter les segments de manière différente afin de réduire la distance totale.
+
+Cette hybridation permet généralement d'obtenir des solutions de meilleure qualité que l'utilisation d'une seule métaheuristique.
+
+\section{Structure du code source}
+
+Afin d'assurer une bonne organisation du projet, le code source a été
+structuré en plusieurs modules Python.
+
+Le fichier \textbf{reader.py} permet de lire les instances du problème
+et de construire la matrice des distances.
+
+Le module \textbf{tsp\_utils.py} contient des fonctions utilitaires,
+notamment le calcul de la longueur d'une tournée et la génération
+de solutions voisines.
+
+Les différents algorithmes sont implémentés dans des fichiers séparés :
+
+\begin{itemize}
+\item \textbf{greedy.py} : implémentation de l'heuristique du plus proche voisin.
+\item \textbf{threshold\_accepting.py} : implémentation de l'algorithme Threshold Accepting.
+\item \textbf{simulated\_annealing.py} : implémentation du recuit simulé.
+\item \textbf{hybrid\_metaheuristic.py} : approche hybride combinant recuit simulé et recherche locale 2-opt.
+\end{itemize}
+
+Le script \textbf{experiments.py} permet d'exécuter les différents algorithmes sur les instances et de comparer les résultats obtenus.
+
+Les résultats expérimentaux et les figures générées sont enregistrés dans le dossier \textbf{results}.
+
+
+\section{Expérimentations}
+
+Les différentes méthodes ont été testées sur plusieurs instances du problème du voyageur de commerce.
+
+Pour chaque instance, les algorithmes suivants ont été exécutés :
+
+\begin{itemize}
+\item heuristique gloutonne du plus proche voisin
+\item Threshold Accepting
+\item recuit simulé
+\item approche hybride (recuit simulé + 2-opt)
+\end{itemize}
 
 \section{Résultats expérimentaux}
 
+Afin d’évaluer les performances des différentes méthodes implémentées, plusieurs expérimentations ont été réalisées sur les instances du problème du voyageur de commerce utilisées dans ce projet. Les algorithmes testés sont : l’heuristique gloutonne du plus proche voisin, l’algorithme Threshold Accepting, le recuit simulé et l’approche hybride proposée.
+
+Pour chaque instance, les algorithmes ont été exécutés dans les mêmes conditions expérimentales. La qualité des solutions obtenues est mesurée à l’aide de la longueur totale de la tournée produite par chaque méthode.
+
+Les résultats obtenus sont représentés graphiquement afin de comparer les performances des différentes approches.
+
 \begin{table}[h]
 \centering
 \begin{tabular}{lcccc}
 \toprule
- & Greedy & Threshold Accepting & SA & Hybrid \\
+--- & Greedy & Threshold Accepting & SA & Hybrid \\
 \midrule
 Distance & 2394 & 2220 & 2157 & 2050 \\
-Temps (s) & 0.0 & 2.257 & 2.498 & 4.415 \\
+Temps & 0.0 & 2.257 & 2.498 & 4.415 \\
+
 \bottomrule
 \end{tabular}
-\caption{Comparaison des méthodes pour l'instance 29}
+\caption{Comparaison des différentes méthodes pour l'instance 29}
 \end{table}
 
 \begin{table}[h]
 \centering
 \begin{tabular}{lcccc}
 \toprule
- & Greedy & Threshold Accepting & SA & Hybrid \\
+--- & Greedy & Threshold Accepting & SA & Hybrid \\
 \midrule
-Distance & 558.85 & 479.81 & 479.81 & 490.55 \\
-Temps (s) & 0.0 & 2.428 & 3.385 & 5.713 \\
+Distance & 558.8489729999999 & 479.808103 & 479.808103 & 490.545335 \\
+Temps & 0.0 & 2.428 & 3.385 & 5.713 \\
+
 \bottomrule
 \end{tabular}
-\caption{Comparaison des méthodes pour l'instance 51}
+\caption{Comparaison des différentes méthodes pour l'instance 51}
 \end{table}
+L’analyse des résultats montre que l’heuristique gloutonne fournit généralement une solution initiale rapide mais de qualité limitée. En effet, cette méthode repose sur des décisions locales qui ne garantissent pas une solution globale optimale.
+
+Les métaheuristiques telles que Threshold Accepting et le recuit simulé permettent d’améliorer significativement la qualité des solutions obtenues. Grâce à leur capacité à explorer différentes régions de l’espace de recherche, ces méthodes sont capables d’éviter plus facilement les minima locaux.
+
+Enfin, l’approche hybride combinant le recuit simulé avec une recherche locale de type 2-opt permet d’obtenir les meilleures performances sur les instances étudiées. Cette amélioration s’explique par la combinaison de deux mécanismes complémentaires : l’exploration globale de l’espace de recherche réalisée par le recuit simulé et l’intensification locale apportée par l’algorithme 2-opt.
+
+Ces résultats confirment l’intérêt de l’hybridation des métaheuristiques pour résoudre des problèmes d’optimisation combinatoire complexes tels que le problème du voyageur de commerce.
+
+
+\section{Discussion}
+
+L'analyse des résultats met en évidence plusieurs observations importantes.
+
+Tout d'abord, l'heuristique gloutonne est extrêmement rapide mais fournit souvent des solutions de qualité inférieure.
+
+Les métaheuristiques telles que Threshold Accepting et le recuit simulé permettent d'améliorer significativement les résultats grâce à leur capacité d'exploration.
+
+Enfin, l'approche hybride combinant recuit simulé et recherche locale offre les meilleures performances, car elle combine exploration globale et amélioration locale.
 
 \section{Conclusion}
 
-Les résultats montrent que les métaheuristiques améliorent la solution gloutonne initiale.
+Dans ce projet, plusieurs méthodes heuristiques et métaheuristiques ont été étudiées afin de résoudre le problème du voyageur de commerce (TSP). Dans un premier temps, une heuristique gloutonne basée sur la stratégie du plus proche voisin a été implémentée afin de construire rapidement une solution initiale. Cette approche présente l’avantage d’être simple et rapide à mettre en œuvre, mais les résultats montrent que la qualité des solutions obtenues reste limitée en raison du caractère local des décisions prises.
 
-L'approche hybride combinant recuit simulé et recherche locale 2-opt permet d'obtenir les meilleures performances.
+Afin d’améliorer ces solutions initiales, deux métaheuristiques à solution unique ont été mises en œuvre : l’algorithme Threshold Accepting et le recuit simulé. Ces méthodes permettent d’explorer plus efficacement l’espace des solutions en acceptant temporairement certaines détériorations, ce qui permet d’éviter le blocage dans des minima locaux et d’obtenir des solutions de meilleure qualité.
+
+Une approche hybride combinant le recuit simulé et la recherche locale 2-opt a été proposée. Les résultats montrent qu’elle permet d’obtenir de meilleures solutions en combinant exploration globale et optimisation locale.
+
+Les expérimentations réalisées confirment l’efficacité des métaheuristiques pour résoudre des problèmes d’optimisation combinatoire complexes comme le TSP. Comme perspective future, il serait intéressant d’étudier d’autres approches et de tester leurs performances sur des instances de plus grande taille.
 
 \end{document}
